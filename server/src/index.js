@@ -1,6 +1,8 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const connectDB = require('./config/db');
+const { initSocket } = require('./realtime/socket');
 const authRouter = require('./routes/auth');
 const workflowsRouter = require('./routes/workflows');
 const tasksRouter = require('./routes/tasks');
@@ -29,7 +31,10 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const httpServer = http.createServer(app);
+initSocket(httpServer);
+
+httpServer.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 

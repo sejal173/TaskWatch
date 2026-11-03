@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { jobQueue } = require('../queue/jobQueue');
 const { recordAudit } = require('../services/audit');
+const { publishEvent } = require('../realtime/events');
 
 const router = express.Router();
 
@@ -41,6 +42,8 @@ router.post('/pause', requireAuth, requireRole('admin'), async (req, res) => {
       },
     });
 
+    await publishEvent('queue.updated', { paused: true });
+
     return res.status(200).json({ paused: true });
   } catch (error) {
     console.error('Error pausing queue:', error);
@@ -65,6 +68,8 @@ router.post('/resume', requireAuth, requireRole('admin'), async (req, res) => {
         paused: false,
       },
     });
+
+    await publishEvent('queue.updated', { paused: false });
 
     return res.status(200).json({ paused: false });
   } catch (error) {

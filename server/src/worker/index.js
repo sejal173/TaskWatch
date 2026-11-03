@@ -7,6 +7,7 @@ const { Job, Workflow } = require('../models');
 const { runWorkflowSteps } = require('./stepRunner');
 const { recordAudit } = require('../services/audit');
 const { startSlaScheduler, stopSlaScheduler } = require('../services/slaChecker');
+const { publishEvent } = require('../realtime/events');
 
 // Connect to MongoDB
 connectDB();
@@ -36,6 +37,14 @@ const worker = new Worker(
     jobDoc.attempts = (jobDoc.attempts || 0) + 1;
     await jobDoc.save();
 
+    await publishEvent('job.updated', {
+      jobId: String(jobDoc._id),
+      status: jobDoc.status,
+      attempts: jobDoc.attempts,
+      lastError: jobDoc.lastError,
+      workflowId: String(jobDoc.workflow),
+    });
+
     console.log(
       `Job ${jobDoc._id} starting execution (Attempt ${jobDoc.attempts} of ${jobDoc.maxAttempts})`
     );
@@ -48,6 +57,14 @@ const worker = new Worker(
       jobDoc.output = output;
       jobDoc.finishedAt = new Date();
       await jobDoc.save();
+
+      await publishEvent('job.updated', {
+        jobId: String(jobDoc._id),
+        status: jobDoc.status,
+        attempts: jobDoc.attempts,
+        lastError: jobDoc.lastError,
+        workflowId: String(jobDoc.workflow),
+      });
 
       await recordAudit({
         action: 'job.succeeded',
@@ -67,6 +84,14 @@ const worker = new Worker(
         jobDoc.status = 'retrying';
         jobDoc.lastError = err.message;
         await jobDoc.save();
+
+        await publishEvent('job.updated', {
+          jobId: String(jobDoc._id),
+          status: jobDoc.status,
+          attempts: jobDoc.attempts,
+          lastError: jobDoc.lastError,
+          workflowId: String(jobDoc.workflow),
+        });
 
         const afterPayload = jobDoc.toObject();
         afterPayload.attempt = jobDoc.attempts;
@@ -88,6 +113,14 @@ const worker = new Worker(
         jobDoc.lastError = err.message;
         jobDoc.finishedAt = new Date();
         await jobDoc.save();
+
+        await publishEvent('job.updated', {
+          jobId: String(jobDoc._id),
+          status: jobDoc.status,
+          attempts: jobDoc.attempts,
+          lastError: jobDoc.lastError,
+          workflowId: String(jobDoc.workflow),
+        });
 
         await recordAudit({
           action: 'job.dead_lettered',

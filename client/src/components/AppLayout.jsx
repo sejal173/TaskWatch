@@ -1,8 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLiveEvents } from '../hooks/useLiveEvents';
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
+  const { isConnected, toast, clearToast } = useLiveEvents();
 
   return (
     <div className="app-layout">
@@ -69,6 +71,10 @@ export default function AppLayout() {
             <span className="system-tag">Enterprise Workflow Engine</span>
           </div>
           <div className="topbar-right">
+            <div className={`live-indicator ${isConnected ? 'live' : 'reconnecting'}`}>
+              <span className="live-dot" />
+              <span className="live-text">{isConnected ? 'Live' : 'Reconnecting'}</span>
+            </div>
             <div className="user-meta">
               <span className="user-name">{user?.name || 'User'}</span>
               <span className="user-role-badge">{user?.role || 'viewer'}</span>
@@ -78,6 +84,22 @@ export default function AppLayout() {
             </button>
           </div>
         </header>
+
+        {/* SLA Breach Alert Banner */}
+        {toast && (
+          <div className="sla-toast-banner">
+            <span className="sla-toast-icon">⚠️</span>
+            <span className="sla-toast-msg">{toast}</span>
+            <button
+              type="button"
+              onClick={clearToast}
+              className="sla-toast-close"
+              aria-label="Dismiss alert"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {/* Dynamic Page Content */}
         <main className="content-area">

@@ -4,6 +4,7 @@ const { Job, Workflow, Task } = require('../models');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { enqueueJob } = require('../queue/jobQueue');
 const { recordAudit } = require('../services/audit');
+const { publishEvent } = require('../realtime/events');
 
 const router = express.Router();
 
@@ -69,6 +70,14 @@ router.post('/', requireAuth, requireRole('admin', 'operator'), async (req, res)
       actor: req.user._id,
       before: null,
       after: job.toObject(),
+    });
+
+    await publishEvent('job.updated', {
+      jobId: String(job._id),
+      status: job.status,
+      attempts: job.attempts,
+      lastError: job.lastError,
+      workflowId: String(job.workflow),
     });
 
     return res.status(201).json(job);
@@ -183,6 +192,14 @@ router.post('/:id/replay', requireAuth, requireRole('admin', 'operator'), async 
       after: job.toObject(),
     });
 
+    await publishEvent('job.updated', {
+      jobId: String(job._id),
+      status: job.status,
+      attempts: job.attempts,
+      lastError: job.lastError,
+      workflowId: String(job.workflow),
+    });
+
     return res.status(200).json(job);
   } catch (error) {
     console.error('Error replaying job:', error);
@@ -217,6 +234,14 @@ router.post('/:id/discard', requireAuth, requireRole('admin', 'operator'), async
       actor: req.user._id,
       before: beforeObj,
       after: job.toObject(),
+    });
+
+    await publishEvent('job.updated', {
+      jobId: String(job._id),
+      status: job.status,
+      attempts: job.attempts,
+      lastError: job.lastError,
+      workflowId: String(job.workflow),
     });
 
     return res.status(200).json(job);

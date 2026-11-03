@@ -126,6 +126,94 @@ body {
   gap: 1.25rem;
 }
 
+/* Realtime Connection Indicator */
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: all 0.2s ease;
+}
+
+.live-indicator .live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.live-indicator.live {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.live-indicator.live .live-dot {
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.live-indicator.reconnecting {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.live-indicator.reconnecting .live-dot {
+  background-color: #94a3b8;
+}
+
+/* SLA Breach Alert Banner */
+.sla-toast-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 0.75rem 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideDown 0.2s ease-out;
+}
+
+.sla-toast-banner .sla-toast-icon {
+  margin-right: 0.5rem;
+}
+
+.sla-toast-banner .sla-toast-msg {
+  flex: 1;
+}
+
+.sla-toast-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #991b1b;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+
+.sla-toast-close:hover {
+  color: #7f1d1d;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .user-meta {
   display: flex;
   align-items: center;

@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const { Job } = require('../models');
 const { sendAlert } = require('./notifier');
 const { recordAudit } = require('./audit');
+const { publishEvent } = require('../realtime/events');
 
 let cronTask = null;
 
@@ -32,6 +33,13 @@ async function runSlaCheck() {
 
       job.slaAlertedAt = new Date();
       await job.save();
+
+      await publishEvent('sla.breached', {
+        jobId: String(job._id),
+        workflowId: String(job.workflow._id || job.workflow),
+        workflowName: job.workflow?.name,
+        deadlineAt: job.deadlineAt,
+      });
 
       await sendAlert({
         type: 'sla_breached',

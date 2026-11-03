@@ -13,7 +13,8 @@
     "test:jobs": "node scripts/test-jobs.js",
     "test:retries": "node scripts/test-retries.js",
     "test:sla": "node scripts/test-sla.js",
-    "test:audit-queues": "node scripts/test-audit-queues.js"
+    "test:audit-queues": "node scripts/test-audit-queues.js",
+    "test:realtime": "node scripts/test-realtime.js"
   },
   "keywords": [],
   "author": "",
@@ -26,9 +27,11 @@
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.9.5",
-    "node-cron": "^4.6.0"
+    "node-cron": "^4.6.0",
+    "socket.io": "^4.8.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "socket.io-client": "^4.8.4"
   }
 }
