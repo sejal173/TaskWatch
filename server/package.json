@@ -14,7 +14,8 @@
     "test:retries": "node scripts/test-retries.js",
     "test:sla": "node scripts/test-sla.js",
     "test:audit-queues": "node scripts/test-audit-queues.js",
-    "test:realtime": "node scripts/test-realtime.js"
+    "test:realtime": "node scripts/test-realtime.js",
+    "test:metrics": "node scripts/test-metrics.js"
   },
   "keywords": [],
   "author": "",

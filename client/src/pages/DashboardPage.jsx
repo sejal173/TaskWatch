@@ -1,10 +1,25 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import SummaryCard from '../components/SummaryCard';
+import MetricCard from '../components/MetricCard';
+import RunsChart from '../components/RunsChart';
 import StatusBadge from '../components/StatusBadge';
 
 export default function DashboardPage() {
+  const [range, setRange] = useState('24h');
+
+  // Query performance metrics for selected range
+  const { data: metricsData } = useQuery({
+    queryKey: ['metrics', range],
+    queryFn: async () => {
+      const res = await api.get(`/metrics/summary?range=${range}`);
+      return res.data;
+    },
+    refetchInterval: 5000,
+  });
+
   // Query running jobs count
   const { data: runningCount } = useQuery({
     queryKey: ['jobCount', 'running'],
@@ -68,19 +83,78 @@ export default function DashboardPage() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? '—' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' ' + d.toLocaleDateString();
+    return isNaN(d.getTime())
+      ? '—'
+      : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
+          ' ' +
+          d.toLocaleDateString();
   };
 
   return (
     <div className="page-container">
-      <div className="page-header">
+      {/* Page Header with Range Toggle */}
+      <div className="page-header dashboard-header">
         <div>
           <h2>System Overview</h2>
           <p className="subtitle">Real-time workflow execution and health metrics</p>
         </div>
+        <div className="range-toggle-group">
+          {['24h', '7d', '30d'].map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={`btn-range ${range === r ? 'active' : ''}`}
+              onClick={() => setRange(r)}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Summary Metrics Cards */}
+      {/* Performance & Quality Metrics Row */}
+      <div className="metrics-grid">
+        <MetricCard
+          title="Success Rate"
+          value={metricsData?.successRate}
+          type="percentage"
+          colorClass="metric-green"
+          subtitle="Across finished jobs"
+        />
+        <MetricCard
+          title="Avg Run Time"
+          value={metricsData?.avgDurationMs}
+          type="duration"
+          colorClass="metric-blue"
+          subtitle="For succeeded jobs"
+        />
+        <MetricCard
+          title="SLA Compliance"
+          value={metricsData?.slaCompliance}
+          type="percentage"
+          colorClass="metric-purple"
+          subtitle="Jobs within target"
+        />
+      </div>
+
+      {/* Execution Volume Chart */}
+      <div className="section-card chart-section">
+        <div className="section-header">
+          <div>
+            <h3>Job Executions Over Time</h3>
+            <span className="section-meta">
+              {range === '24h'
+                ? 'Hourly trends (last 24 hours)'
+                : range === '7d'
+                ? 'Daily trends (last 7 days)'
+                : 'Daily trends (last 30 days)'}
+            </span>
+          </div>
+        </div>
+        <RunsChart timeseries={metricsData?.timeseries || []} range={range} />
+      </div>
+
+      {/* Status Summary Counts */}
       <div className="cards-grid">
         <SummaryCard
           title="Running"

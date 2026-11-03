@@ -36,11 +36,12 @@ export function useLiveEvents() {
       setIsConnected(false);
     };
 
-    // When jobs change, invalidate jobs and dashboard count queries
+    // When jobs change, invalidate jobs, dashboard counts, and metrics queries
     const onJobUpdated = () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobCount'] });
       queryClient.invalidateQueries({ queryKey: ['recentJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['metrics'] });
     };
 
     // When queue pause/resume toggles, invalidate queueStats
@@ -53,6 +54,7 @@ export function useLiveEvents() {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobCount'] });
       queryClient.invalidateQueries({ queryKey: ['recentJobs'] });
+      queryClient.invalidateQueries({ queryKey: ['metrics'] });
 
       const message = payload?.workflowName
         ? `SLA breached: ${payload.workflowName} job ${payload.jobId}`

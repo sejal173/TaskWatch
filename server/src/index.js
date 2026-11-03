@@ -9,6 +9,7 @@ const tasksRouter = require('./routes/tasks');
 const jobsRouter = require('./routes/jobs');
 const auditRouter = require('./routes/audit');
 const queuesRouter = require('./routes/queues');
+const metricsRouter = require('./routes/metrics');
 
 // Connect to MongoDB
 connectDB();
@@ -23,6 +24,7 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/jobs', jobsRouter);
 app.use('/api/audit', auditRouter);
 app.use('/api/queues', queuesRouter);
+app.use('/api/metrics', metricsRouter);
 
 // Routes
 app.get('/api/health', (req, res) => {
