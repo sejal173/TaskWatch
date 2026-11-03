@@ -1,0 +1,33 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "TaskWatch Server",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "worker": "nodemon src/worker/index.js",
+    "test:auth": "node scripts/test-auth.js",
+    "test:workflows": "node scripts/test-workflows.js",
+    "test:jobs": "node scripts/test-jobs.js",
+    "test:retries": "node scripts/test-retries.js",
+    "test:sla": "node scripts/test-sla.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "bullmq": "^6.5.4",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.9.5",
+    "node-cron": "^4.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
