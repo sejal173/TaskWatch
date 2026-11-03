@@ -4,6 +4,8 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import WorkflowsPage from './pages/WorkflowsPage';
 import JobsPage from './pages/JobsPage';
+import QueuesPage from './pages/QueuesPage';
+import AuditPage from './pages/AuditPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/AppLayout';
 
@@ -25,6 +27,8 @@ export default function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/workflows" element={<WorkflowsPage />} />
         <Route path="/jobs" element={<JobsPage />} />
+        <Route path="/queues" element={<QueuesPage />} />
+        <Route path="/audit" element={<AuditPage />} />
       </Route>
 
       {/* Catch-all route */}

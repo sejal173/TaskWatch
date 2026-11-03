@@ -12,7 +12,8 @@
     "test:workflows": "node scripts/test-workflows.js",
     "test:jobs": "node scripts/test-jobs.js",
     "test:retries": "node scripts/test-retries.js",
-    "test:sla": "node scripts/test-sla.js"
+    "test:sla": "node scripts/test-sla.js",
+    "test:audit-queues": "node scripts/test-audit-queues.js"
   },
   "keywords": [],
   "author": "",

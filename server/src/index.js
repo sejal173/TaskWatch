@@ -5,6 +5,8 @@ const authRouter = require('./routes/auth');
 const workflowsRouter = require('./routes/workflows');
 const tasksRouter = require('./routes/tasks');
 const jobsRouter = require('./routes/jobs');
+const auditRouter = require('./routes/audit');
+const queuesRouter = require('./routes/queues');
 
 // Connect to MongoDB
 connectDB();
@@ -17,6 +19,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/workflows', workflowsRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/jobs', jobsRouter);
+app.use('/api/audit', auditRouter);
+app.use('/api/queues', queuesRouter);
 
 // Routes
 app.get('/api/health', (req, res) => {

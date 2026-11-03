@@ -775,3 +775,118 @@ body {
 .text-muted {
   color: #94a3b8;
 }
+
+/* --------------------------------------------------------------------------
+   Step 12: Audit & Queue Styling Additions
+   -------------------------------------------------------------------------- */
+.filter-card {
+  padding: 1.25rem 1.5rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.code-inline {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  border: 1px solid #e2e8f0;
+}
+
+.action-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #2563eb;
+  background-color: #eff6ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+}
+
+.entity-type-badge {
+  font-size: 0.775rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+  background-color: #f1f5f9;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  letter-spacing: 0.025em;
+}
+
+.actor-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.diff-row td {
+  background-color: #f8fafc;
+  padding: 1.25rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.diff-container {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.diff-column {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.diff-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.json-pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  background-color: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  overflow-x: auto;
+  max-height: 250px;
+  line-height: 1.4;
+}
+
+.queue-status-card {
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.queue-status-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.queue-status-meta {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}

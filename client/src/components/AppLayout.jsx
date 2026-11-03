@@ -38,6 +38,26 @@ export default function AppLayout() {
             <span className="nav-icon">📋</span>
             <span>Jobs</span>
           </NavLink>
+
+          {(user?.role === 'admin' || user?.role === 'operator') && (
+            <NavLink
+              to="/queues"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+            >
+              <span className="nav-icon">⚙️</span>
+              <span>Queues</span>
+            </NavLink>
+          )}
+
+          {user?.role === 'admin' && (
+            <NavLink
+              to="/audit"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+            >
+              <span className="nav-icon">🔍</span>
+              <span>Audit</span>
+            </NavLink>
+          )}
         </nav>
       </aside>
 
