@@ -1,27 +1,37 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLiveEvents } from '../hooks/useLiveEvents';
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const { isConnected, toast, clearToast } = useLiveEvents();
+  const location = useLocation();
+
+  const getPageTitle = (pathname) => {
+    if (pathname === '/') return 'Dashboard';
+    if (pathname.startsWith('/workflows')) return 'Workflows';
+    if (pathname.startsWith('/jobs')) return 'Jobs';
+    if (pathname.startsWith('/queues')) return 'Queues';
+    if (pathname.startsWith('/audit')) return 'Audit Trail';
+    return 'Dashboard';
+  };
 
   return (
     <div className="app-layout">
-      {/* Sidebar */}
+      {/* Fixed Left Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="brand-logo">⏱</span>
+          <span className="brand-logo" aria-hidden="true">⏱</span>
           <h2>TaskWatch</h2>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" aria-label="Main Navigation">
           <NavLink
             to="/"
             end
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <span className="nav-icon">📊</span>
+            <span className="nav-icon" aria-hidden="true">📊</span>
             <span>Dashboard</span>
           </NavLink>
 
@@ -29,7 +39,7 @@ export default function AppLayout() {
             to="/workflows"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <span className="nav-icon">⚡</span>
+            <span className="nav-icon" aria-hidden="true">⚡</span>
             <span>Workflows</span>
           </NavLink>
 
@@ -37,7 +47,7 @@ export default function AppLayout() {
             to="/jobs"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <span className="nav-icon">📋</span>
+            <span className="nav-icon" aria-hidden="true">📋</span>
             <span>Jobs</span>
           </NavLink>
 
@@ -46,7 +56,7 @@ export default function AppLayout() {
               to="/queues"
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             >
-              <span className="nav-icon">⚙️</span>
+              <span className="nav-icon" aria-hidden="true">⚙️</span>
               <span>Queues</span>
             </NavLink>
           )}
@@ -56,7 +66,7 @@ export default function AppLayout() {
               to="/audit"
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             >
-              <span className="nav-icon">🔍</span>
+              <span className="nav-icon" aria-hidden="true">🔍</span>
               <span>Audit</span>
             </NavLink>
           )}
@@ -68,12 +78,16 @@ export default function AppLayout() {
         {/* Top Navbar */}
         <header className="topbar">
           <div className="topbar-left">
-            <span className="system-tag">Enterprise Workflow Engine</span>
+            <h1 className="page-title">{getPageTitle(location.pathname)}</h1>
           </div>
           <div className="topbar-right">
-            <div className={`live-indicator ${isConnected ? 'live' : 'reconnecting'}`}>
-              <span className="live-dot" />
-              <span className="live-text">{isConnected ? 'Live' : 'Reconnecting'}</span>
+            <div
+              className={`live-indicator ${isConnected ? 'live' : 'reconnecting'}`}
+              title={isConnected ? 'Socket.IO live' : 'Socket.IO disconnected'}
+              aria-label={isConnected ? 'Connected to realtime updates' : 'Disconnected from realtime updates'}
+            >
+              <span className="live-dot" aria-hidden="true" />
+              <span className="live-text">{isConnected ? 'Live' : 'Offline'}</span>
             </div>
             <div className="user-meta">
               <span className="user-name">{user?.name || 'User'}</span>
@@ -87,8 +101,8 @@ export default function AppLayout() {
 
         {/* SLA Breach Alert Banner */}
         {toast && (
-          <div className="sla-toast-banner">
-            <span className="sla-toast-icon">⚠️</span>
+          <div className="sla-toast-banner" role="alert">
+            <span className="sla-toast-icon" aria-hidden="true">⚠️</span>
             <span className="sla-toast-msg">{toast}</span>
             <button
               type="button"
@@ -109,4 +123,3 @@ export default function AppLayout() {
     </div>
   );
 }
-

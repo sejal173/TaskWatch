@@ -114,9 +114,9 @@ async function run() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: testEmail, password: testPassword }),
-      }),
-    (status, body) => status === 200 && Boolean(body.token) && body.user && !('passwordHash' in body.user)
+      }),=== 200 && Boolean(body.token) && body.user && !('passwordHash' in body.user)
   );
+  (status, body) => status
 
   // Fallback if register token wasn't captured
   if (!authToken && loginResult.body && loginResult.body.token) {

@@ -66,27 +66,31 @@ export default function RunsChart({ timeseries = [], range = '24h' }) {
     <div className="chart-container">
       {totalRuns === 0 ? (
         <div className="chart-empty-message">
-          <span className="empty-icon">📊</span>
-          <p>No runs in this period</p>
+          <span className="empty-icon" aria-hidden="true">📊</span>
+          <p>No execution activity recorded in this time window</p>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={timeseries} margin={{ top: 10, right: 15, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+          <BarChart data={timeseries} margin={{ top: 12, right: 16, left: -8, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis
               dataKey="time"
               tickFormatter={formatXAxis}
-              stroke="#64748b"
-              fontSize={12}
+              stroke="#94a3b8"
+              fontSize={11}
+              fontWeight={500}
               tickLine={false}
-              axisLine={{ stroke: '#cbd5e1' }}
+              axisLine={{ stroke: '#e2e8f0' }}
+              dy={6}
             />
             <YAxis
               allowDecimals={false}
-              stroke="#64748b"
-              fontSize={12}
+              stroke="#94a3b8"
+              fontSize={11}
+              fontWeight={500}
               tickLine={false}
-              axisLine={{ stroke: '#cbd5e1' }}
+              axisLine={{ stroke: '#e2e8f0' }}
+              dx={-4}
             />
             <Tooltip
               labelFormatter={formatTooltipLabel}
@@ -94,22 +98,26 @@ export default function RunsChart({ timeseries = [], range = '24h' }) {
               contentStyle={{
                 backgroundColor: '#ffffff',
                 border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
                 fontSize: '12px',
+                padding: '8px 12px',
+                color: '#0f172a',
               }}
+              cursor={{ fill: 'rgba(241, 245, 249, 0.6)' }}
             />
             <Legend
               formatter={legendFormatter}
-              wrapperStyle={{ paddingTop: '10px', fontSize: '13px' }}
+              wrapperStyle={{ paddingTop: '16px', fontSize: '12px', fontWeight: 500 }}
+              iconType="circle"
+              iconSize={8}
             />
-            <Bar dataKey="succeeded" name="succeeded" stackId="runs" fill="#10b981" />
-            <Bar dataKey="failed" name="failed" stackId="runs" fill="#ef4444" />
-            <Bar dataKey="dead_lettered" name="dead_lettered" stackId="runs" fill="#991b1b" />
+            <Bar dataKey="succeeded" name="succeeded" stackId="runs" fill="#10b981" radius={[0, 0, 0, 0]} />
+            <Bar dataKey="failed" name="failed" stackId="runs" fill="#ef4444" radius={[0, 0, 0, 0]} />
+            <Bar dataKey="dead_lettered" name="dead_lettered" stackId="runs" fill="#991b1b" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}
     </div>
   );
 }
-

@@ -14,19 +14,6 @@ export default function QueuesPage() {
   const canView = user?.role === 'admin' || user?.role === 'operator';
   const canControl = user?.role === 'admin';
 
-  if (!canView) {
-    return (
-      <div className="page-container">
-        <div className="page-header">
-          <h2>Queue Management</h2>
-        </div>
-        <div className="error-message">
-          Access denied. Only administrators and operators can view queue telemetry.
-        </div>
-      </div>
-    );
-  }
-
   // Poll queue statistics every 5 seconds
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['queueStats'],
@@ -34,8 +21,25 @@ export default function QueuesPage() {
       const res = await api.get('/queues/stats');
       return res.data;
     },
+    enabled: canView,
     refetchInterval: 5000,
   });
+
+  if (!canView) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <div>
+            <h2>Queue Management</h2>
+            <p className="subtitle">BullMQ cluster telemetry and execution state</p>
+          </div>
+        </div>
+        <div className="error-message">
+          Access denied. Only administrators and operators can view queue telemetry.
+        </div>
+      </div>
+    );
+  }
 
   const isPaused = data?.paused || false;
   const counts = data?.counts || {};
@@ -83,7 +87,7 @@ export default function QueuesPage() {
           <div className="btn-group">
             <button
               type="button"
-              className="btn-action btn-discard"
+              className="btn-danger"
               onClick={handlePause}
               disabled={isPaused || submitting}
               title="Pause queue processing"
@@ -92,7 +96,7 @@ export default function QueuesPage() {
             </button>
             <button
               type="button"
-              className="btn-action btn-run"
+              className="btn-primary"
               onClick={handleResume}
               disabled={!isPaused || submitting}
               title="Resume queue processing"
@@ -109,12 +113,13 @@ export default function QueuesPage() {
       <div className="section-card queue-status-card">
         <div className="queue-status-left">
           <span className="status-label">Worker State:</span>
-          <span className={`badge ${isPaused ? 'badge-yellow' : 'badge-green'}`}>
-            {isPaused ? 'Paused' : 'Running'}
+          <span className={`status-badge ${isPaused ? 'status-warning' : 'status-success'}`}>
+            <span className="status-dot" aria-hidden="true" />
+            <span className="status-label">{isPaused ? 'Paused' : 'Active'}</span>
           </span>
         </div>
         <div className="queue-status-meta">
-          <span>Auto-refreshes every 5s</span>
+          <span>Telemetry auto-refreshes every 5s</span>
         </div>
       </div>
 
@@ -153,7 +158,12 @@ export default function QueuesPage() {
       </div>
 
       {/* State Messages */}
-      {isLoading && <div className="table-state-message">Loading queue metrics...</div>}
+      {isLoading && (
+        <div className="table-state-message">
+          <div className="spinner" />
+          <span>Loading queue metrics...</span>
+        </div>
+      )}
       {isError && (
         <div className="table-state-message error">
           Failed to connect to Redis queue. Ensure backend and Redis are running.
@@ -162,4 +172,3 @@ export default function QueuesPage() {
     </div>
   );
 }
-

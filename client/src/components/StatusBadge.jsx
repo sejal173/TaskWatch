@@ -1,43 +1,55 @@
 export default function StatusBadge({ status }) {
   const normalized = status ? String(status).toLowerCase() : 'pending';
 
-  let colorClass = 'badge-gray';
-  let label = normalized.replace('_', ' ');
+  let color = 'neutral';
+  let label = normalized.replace(/_/g, ' ');
 
   switch (normalized) {
     case 'succeeded':
-      colorClass = 'badge-green';
-      label = 'Succeeded';
+    case 'done':
+    case 'active':
+      color = 'success';
+      label = normalized === 'active' ? 'Active' : normalized === 'done' ? 'Done' : 'Succeeded';
       break;
     case 'running':
-      colorClass = 'badge-blue';
-      label = 'Running';
+    case 'in_progress':
+      color = 'info';
+      label = normalized === 'in_progress' ? 'In Progress' : 'Running';
       break;
     case 'retrying':
-      colorClass = 'badge-yellow';
+      color = 'warning';
       label = 'Retrying';
       break;
     case 'failed':
-      colorClass = 'badge-red';
+      color = 'danger';
       label = 'Failed';
       break;
     case 'dead_lettered':
-      colorClass = 'badge-red';
+      color = 'danger';
       label = 'Dead Letter';
       break;
+    case 'queued':
+      color = 'info';
+      label = 'Queued';
+      break;
     case 'pending':
-      colorClass = 'badge-gray';
+      color = 'neutral';
       label = 'Pending';
       break;
     case 'discarded':
-      colorClass = 'badge-gray';
-      label = 'Discarded';
+    case 'inactive':
+      color = 'neutral';
+      label = normalized === 'inactive' ? 'Inactive' : 'Discarded';
       break;
     default:
-      colorClass = 'badge-gray';
+      color = 'neutral';
       label = status || 'Unknown';
   }
 
-  return <span className={`badge ${colorClass}`}>{label}</span>;
+  return (
+    <span className={`status-badge status-${color}`}>
+      <span className="status-dot" aria-hidden="true" />
+      <span className="status-label">{label}</span>
+    </span>
+  );
 }
-

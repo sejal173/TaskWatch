@@ -201,11 +201,17 @@ export default function DashboardPage() {
         </div>
 
         {isLoadingRecent ? (
-          <div className="table-state-message">Loading recent jobs...</div>
+          <div className="table-state-message">
+            <div className="spinner" />
+            <span>Loading recent activity...</span>
+          </div>
         ) : isError ? (
           <div className="table-state-message error">Failed to load recent jobs</div>
         ) : !recentJobs || recentJobs.length === 0 ? (
-          <div className="table-state-message">No jobs have been triggered yet.</div>
+          <div className="table-state-message empty">
+            <span className="empty-icon">📊</span>
+            <p>No jobs have been triggered yet.</p>
+          </div>
         ) : (
           <div className="table-responsive">
             <table className="data-table">

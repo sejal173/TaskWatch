@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
-// Task schema representing an instance or item within a workflow
+// Task schema representing an instance or item within a workflow or team task
 const taskSchema = new mongoose.Schema(
   {
     workflow: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Workflow',
-      required: true,
+      default: null,
     },
     title: {
       type: String,
@@ -15,8 +15,13 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'in_progress', 'done', 'failed'],
+      enum: ['pending', 'in_progress', 'done', 'failed', 'cancelled'],
       default: 'pending',
+    },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'medium',
     },
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,6 +29,14 @@ const taskSchema = new mongoose.Schema(
       default: null,
     },
     dueAt: {
+      type: Date,
+      default: null,
+    },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+    reminderSentAt: {
       type: Date,
       default: null,
     },
@@ -37,7 +50,10 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for team task filtering and deadline queries
+taskSchema.index({ assignedTo: 1, status: 1 });
+taskSchema.index({ dueAt: 1, status: 1 });
+
 const Task = mongoose.model('Task', taskSchema);
 
 module.exports = Task;
-

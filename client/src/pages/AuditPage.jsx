@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function AuditPage() {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const [entityType, setEntityType] = useState('');
   const [action, setAction] = useState('');
@@ -13,20 +14,6 @@ export default function AuditPage() {
   const [expandedIds, setExpandedIds] = useState(new Set());
 
   const limit = 20;
-
-  // Strict role check for UI
-  if (user?.role !== 'admin') {
-    return (
-      <div className="page-container">
-        <div className="page-header">
-          <h2>Audit Trail</h2>
-        </div>
-        <div className="error-message">
-          Admins only. You do not have permission to view audit logs.
-        </div>
-      </div>
-    );
-  }
 
   // Fetch audit records, refreshing every 10 seconds
   const { data, isLoading, isError } = useQuery({
@@ -44,8 +31,26 @@ export default function AuditPage() {
       const res = await api.get(`/audit?${params.toString()}`);
       return res.data;
     },
+    enabled: isAdmin,
     refetchInterval: 10000,
   });
+
+  // Strict role check for UI (rendered after hooks)
+  if (!isAdmin) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <div>
+            <h2>Audit Trail</h2>
+            <p className="subtitle">Immutable compliance and operation logs</p>
+          </div>
+        </div>
+        <div className="error-message">
+          Admins only. You do not have permission to view audit logs.
+        </div>
+      </div>
+    );
+  }
 
   const items = data?.items || [];
   const total = data?.total || 0;
@@ -143,11 +148,17 @@ export default function AuditPage() {
       {/* Audit Log Table */}
       <div className="section-card">
         {isLoading ? (
-          <div className="table-state-message">Loading audit events...</div>
+          <div className="table-state-message">
+            <div className="spinner" />
+            <span>Loading audit events...</span>
+          </div>
         ) : isError ? (
           <div className="table-state-message error">Failed to load audit events. Check query parameters.</div>
         ) : items.length === 0 ? (
-          <div className="table-state-message">No audit events match the specified filter.</div>
+          <div className="table-state-message empty">
+            <span className="empty-icon">🔍</span>
+            <p>No audit events match the specified filter.</p>
+          </div>
         ) : (
           <div className="table-responsive">
             <table className="data-table">

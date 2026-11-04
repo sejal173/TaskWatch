@@ -365,11 +365,17 @@ export default function WorkflowsPage() {
       {/* Workflows Table */}
       <div className="section-card">
         {isLoading ? (
-          <div className="table-state-message">Loading workflows...</div>
+          <div className="table-state-message">
+            <div className="spinner" />
+            <span>Loading workflows...</span>
+          </div>
         ) : isError ? (
           <div className="table-state-message error">Error loading workflows</div>
         ) : workflows.length === 0 ? (
-          <div className="table-state-message">No workflows found.</div>
+          <div className="table-state-message empty">
+            <span className="empty-icon">⚡</span>
+            <p>No workflows created yet.</p>
+          </div>
         ) : (
           <div className="table-responsive">
             <table className="data-table">

@@ -125,11 +125,17 @@ export default function JobsPage() {
       {/* Jobs Table Section */}
       <div className="section-card">
         {isLoading ? (
-          <div className="table-state-message">Loading jobs...</div>
+          <div className="table-state-message">
+            <div className="spinner" />
+            <span>Loading jobs...</span>
+          </div>
         ) : isError ? (
           <div className="table-state-message error">Error loading jobs</div>
         ) : jobs.length === 0 ? (
-          <div className="table-state-message">No jobs found matching the selected filter.</div>
+          <div className="table-state-message empty">
+            <span className="empty-icon">📋</span>
+            <p>No jobs found matching the selected filter.</p>
+          </div>
         ) : (
           <div className="table-responsive">
             <table className="data-table">
@@ -171,7 +177,7 @@ export default function JobsPage() {
                           <div className="btn-group">
                             <button
                               type="button"
-                              className="btn-action btn-replay"
+                              className="btn-primary btn-sm"
                               onClick={() => handleReplay(job._id)}
                               disabled={processingId === job._id}
                               title="Replay this dead-lettered job"
@@ -180,7 +186,7 @@ export default function JobsPage() {
                             </button>
                             <button
                               type="button"
-                              className="btn-action btn-discard"
+                              className="btn-danger btn-sm"
                               onClick={() => handleDiscard(job._id)}
                               disabled={processingId === job._id}
                               title="Discard this dead-lettered job"
