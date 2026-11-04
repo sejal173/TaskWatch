@@ -57,15 +57,9 @@ const worker = new Worker(
       `Job ${jobDoc._id} starting execution (Attempt ${jobDoc.attempts} of ${jobDoc.maxAttempts})`
     );
 
+    let output;
     try {
-      const output = await runWorkflowSteps(workflowDoc, jobDoc);
-
-      // On success
-      jobDoc.output = output;
-      jobDoc.finishedAt = new Date();
-      await transitionJob(jobDoc, 'succeeded');
-
-      return output;
+      output = await runWorkflowSteps(workflowDoc, jobDoc);
     } catch (err) {
       logger.warn(
         { jobId: jobDoc._id, attempt: jobDoc.attempts, err: err.message },
@@ -99,6 +93,20 @@ const worker = new Worker(
         // Do not rethrow so BullMQ stops and does not perform additional retries
         return;
       }
+    }
+
+    // On success: transition to succeeded safely
+    try {
+      jobDoc.output = output;
+      jobDoc.finishedAt = new Date();
+      await transitionJob(jobDoc, 'succeeded');
+      return output;
+    } catch (transitionErr) {
+      logger.error(
+        { jobId: jobDoc._id, err: transitionErr.message },
+        `Error transitioning job ${jobDoc._id} to succeeded: ${transitionErr.message}`
+      );
+      throw transitionErr;
     }
   },
   {

@@ -13,6 +13,11 @@ node_modules/
 dist/
 build/
 out/
+client/dist/
+
+# Logs
+logs/
+server/logs/
 
 # Logs
 npm-debug.log*
