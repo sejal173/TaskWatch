@@ -1,5 +1,6 @@
 const Redis = require('ioredis');
 require('dotenv').config();
+const logger = require('./logger');
 
 // Shared Redis connection for BullMQ queue and worker
 const redisConnection = new Redis({
@@ -9,7 +10,7 @@ const redisConnection = new Redis({
 });
 
 redisConnection.on('error', (err) => {
-  console.error('Redis connection error:', err.message);
+  logger.error({ err: err.message }, 'Redis connection error');
 });
 
 module.exports = redisConnection;

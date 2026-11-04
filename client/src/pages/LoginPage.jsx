@@ -28,7 +28,9 @@ export default function LoginPage() {
       navigate('/');
     } catch (err) {
       const message =
-        err.response?.data?.error || err.message || 'Login failed. Please try again.';
+        err.response?.status === 429
+          ? 'Too many attempts. Please wait and try again.'
+          : err.response?.data?.error || err.message || 'Login failed. Please try again.';
       setError(message);
     } finally {
       setSubmitting(false);

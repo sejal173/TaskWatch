@@ -4,6 +4,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 const { jobQueue } = require('../queue/jobQueue');
 const { recordAudit } = require('../services/audit');
 const { publishEvent } = require('../realtime/events');
+const logger = require('../config/logger');
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get('/stats', requireAuth, requireRole('admin', 'operator'), async (req, 
       counts,
     });
   } catch (error) {
-    console.error('Error fetching queue stats:', error);
+    logger.error({ err: error.message }, 'Error fetching queue stats');
     return res.status(500).json({ error: 'Server error retrieving queue statistics' });
   }
 });
@@ -29,15 +30,14 @@ router.post('/pause', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     await jobQueue.pause();
 
-    // AuditEvent entityId is required by model, so generate a new ObjectId for queue events
     await recordAudit({
       action: 'queue.paused',
-      entityType: 'job',
-      entityId: new mongoose.Types.ObjectId(),
+      entityType: 'queue',
+      entityId: null,
       actor: req.user._id,
       before: null,
       after: {
-        queue: jobQueue.name,
+        name: jobQueue.name,
         paused: true,
       },
     });
@@ -46,7 +46,7 @@ router.post('/pause', requireAuth, requireRole('admin'), async (req, res) => {
 
     return res.status(200).json({ paused: true });
   } catch (error) {
-    console.error('Error pausing queue:', error);
+    logger.error('Error pausing queue: ' + error.message);
     return res.status(500).json({ error: error.message || 'Server error pausing queue' });
   }
 });
@@ -56,15 +56,14 @@ router.post('/resume', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     await jobQueue.resume();
 
-    // AuditEvent entityId is required by model, so generate a new ObjectId for queue events
     await recordAudit({
       action: 'queue.resumed',
-      entityType: 'job',
-      entityId: new mongoose.Types.ObjectId(),
+      entityType: 'queue',
+      entityId: null,
       actor: req.user._id,
       before: null,
       after: {
-        queue: jobQueue.name,
+        name: jobQueue.name,
         paused: false,
       },
     });
@@ -73,7 +72,7 @@ router.post('/resume', requireAuth, requireRole('admin'), async (req, res) => {
 
     return res.status(200).json({ paused: false });
   } catch (error) {
-    console.error('Error resuming queue:', error);
+    logger.error('Error resuming queue: ' + error.message);
     return res.status(500).json({ error: error.message || 'Server error resuming queue' });
   }
 });

@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const Redis = require('ioredis');
+const logger = require('../config/logger');
 const { REDIS_EVENTS_CHANNEL } = require('./events');
 
 let io = null;
@@ -43,12 +44,12 @@ function initSocket(httpServer) {
   });
 
   subscriber.on('error', (err) => {
-    console.error('[Realtime Subscriber Error]', err.message);
+    logger.error({ err: err.message }, '[Realtime Subscriber Error]');
   });
 
   subscriber.subscribe(REDIS_EVENTS_CHANNEL, (err) => {
     if (err) {
-      console.error(`Failed to subscribe to ${REDIS_EVENTS_CHANNEL}:`, err.message);
+      logger.error({ channel: REDIS_EVENTS_CHANNEL, err: err.message }, `Failed to subscribe to ${REDIS_EVENTS_CHANNEL}`);
     }
   });
 
@@ -59,12 +60,12 @@ function initSocket(httpServer) {
         const { name, payload } = JSON.parse(message);
         io.emit(name, payload);
       } catch (err) {
-        console.error('Failed to parse realtime Redis message:', err.message);
+        logger.error({ err: err.message }, 'Failed to parse realtime Redis message');
       }
     }
   });
 
-  console.log('Socket.IO ready');
+  logger.info('Socket.IO ready');
   return io;
 }
 
@@ -76,4 +77,3 @@ module.exports = {
   initSocket,
   getIo,
 };
-

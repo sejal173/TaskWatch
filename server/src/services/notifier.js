@@ -1,9 +1,10 @@
 /**
  * SLA breach and operational notification service
  */
+const logger = require('../config/logger');
 
 async function sendAlert({ type, message, data }) {
-  console.log(`[ALERT] ${type}: ${message}`);
+  logger.info({ type, data }, `[ALERT] ${type}: ${message}`);
 
   const webhookUrl = process.env.SLA_WEBHOOK_URL;
   if (!webhookUrl) {
@@ -26,11 +27,10 @@ async function sendAlert({ type, message, data }) {
       body: JSON.stringify(payload),
     });
   } catch (err) {
-    console.error(`Failed to send webhook alert to ${webhookUrl}:`, err.message);
+    logger.error({ webhookUrl, err: err.message }, `Failed to send webhook alert to ${webhookUrl}`);
   }
 }
 
 module.exports = {
   sendAlert,
 };
-

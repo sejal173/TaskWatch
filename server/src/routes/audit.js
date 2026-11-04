@@ -5,7 +5,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-const VALID_ENTITY_TYPES = ['workflow', 'task', 'job', 'user'];
+const VALID_ENTITY_TYPES = ['workflow', 'task', 'job', 'user', 'queue', 'system'];
 
 /**
  * Deep recursive scrubber to guarantee passwordHash never leaks in audit logs

@@ -15,7 +15,8 @@
     "test:sla": "node scripts/test-sla.js",
     "test:audit-queues": "node scripts/test-audit-queues.js",
     "test:realtime": "node scripts/test-realtime.js",
-    "test:metrics": "node scripts/test-metrics.js"
+    "test:metrics": "node scripts/test-metrics.js",
+    "test:reliability": "node scripts/test-reliability.js"
   },
   "keywords": [],
   "author": "",
@@ -25,14 +26,18 @@
     "bullmq": "^6.5.4",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.7.3",
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.9.5",
     "node-cron": "^4.6.0",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
     "socket.io": "^4.8.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
+    "pino-pretty": "^13.2.0",
     "socket.io-client": "^4.8.4"
   }
 }

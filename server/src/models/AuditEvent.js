@@ -10,11 +10,14 @@ const auditEventSchema = new mongoose.Schema(
     entityType: {
       type: String,
       required: true,
-      enum: ['workflow', 'task', 'job', 'user'],
+      enum: ['workflow', 'task', 'job', 'user', 'queue', 'system'],
     },
     entityId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      required: function () {
+        return this.entityType !== 'queue' && this.entityType !== 'system';
+      },
+      default: null,
     },
     actor: {
       type: mongoose.Schema.Types.ObjectId,

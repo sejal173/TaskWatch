@@ -1,4 +1,5 @@
 const Redis = require('ioredis');
+const logger = require('../config/logger');
 
 const REDIS_EVENTS_CHANNEL = 'taskwatch:events';
 
@@ -13,7 +14,7 @@ const publisher = new Redis({
 });
 
 publisher.on('error', (err) => {
-  console.error('[Realtime Publisher Error]', err.message);
+  logger.error({ err: err.message }, '[Realtime Publisher Error]');
 });
 
 /**
@@ -33,7 +34,7 @@ async function publishEvent(name, payload) {
     });
     await publisher.publish(REDIS_EVENTS_CHANNEL, message);
   } catch (err) {
-    console.error(`[Realtime Publish Error] Failed to publish ${name}:`, err.message);
+    logger.error({ name, err: err.message }, `[Realtime Publish Error] Failed to publish ${name}`);
   }
 }
 
@@ -45,4 +46,3 @@ module.exports = {
   publishEvent,
   publisher,
 };
-

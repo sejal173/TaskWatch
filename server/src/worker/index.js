@@ -3,17 +3,33 @@ const mongoose = require('mongoose');
 const { Worker } = require('bullmq');
 const connectDB = require('../config/db');
 const redisConnection = require('../config/redis');
+const logger = require('../config/logger');
 const { Job, Workflow } = require('../models');
 const { runWorkflowSteps } = require('./stepRunner');
-const { recordAudit } = require('../services/audit');
+const { transitionJob } = require('../services/transition');
 const { startSlaScheduler, stopSlaScheduler } = require('../services/slaChecker');
-const { publishEvent } = require('../realtime/events');
 
 // Connect to MongoDB
 connectDB();
 
 // Start SLA breach monitoring scheduler
 startSlaScheduler();
+
+/**
+ * Helper to determine if an error can be retried.
+ * Returns false when err.code is 'INVALID_PAYLOAD' or the error message contains 'INVALID_PAYLOAD'.
+ *
+ * @param {Error|any} err
+ * @returns {boolean}
+ */
+function isRetryable(err) {
+  if (!err) return true;
+  if (err.code === 'INVALID_PAYLOAD') return false;
+  if (typeof err.message === 'string' && err.message.includes('INVALID_PAYLOAD')) {
+    return false;
+  }
+  return true;
+}
 
 // Initialize BullMQ Worker for workflow-jobs queue
 const worker = new Worker(
@@ -32,20 +48,12 @@ const worker = new Worker(
     }
 
     // Set job to running on start and retries; do not reset attempts
-    jobDoc.status = 'running';
     jobDoc.startedAt = jobDoc.startedAt || new Date();
     jobDoc.attempts = (jobDoc.attempts || 0) + 1;
-    await jobDoc.save();
+    await transitionJob(jobDoc, 'running');
 
-    await publishEvent('job.updated', {
-      jobId: String(jobDoc._id),
-      status: jobDoc.status,
-      attempts: jobDoc.attempts,
-      lastError: jobDoc.lastError,
-      workflowId: String(jobDoc.workflow),
-    });
-
-    console.log(
+    logger.info(
+      { jobId: jobDoc._id, attempt: jobDoc.attempts, maxAttempts: jobDoc.maxAttempts },
       `Job ${jobDoc._id} starting execution (Attempt ${jobDoc.attempts} of ${jobDoc.maxAttempts})`
     );
 
@@ -53,86 +61,39 @@ const worker = new Worker(
       const output = await runWorkflowSteps(workflowDoc, jobDoc);
 
       // On success
-      jobDoc.status = 'succeeded';
       jobDoc.output = output;
       jobDoc.finishedAt = new Date();
-      await jobDoc.save();
-
-      await publishEvent('job.updated', {
-        jobId: String(jobDoc._id),
-        status: jobDoc.status,
-        attempts: jobDoc.attempts,
-        lastError: jobDoc.lastError,
-        workflowId: String(jobDoc.workflow),
-      });
-
-      await recordAudit({
-        action: 'job.succeeded',
-        entityType: 'job',
-        entityId: jobDoc._id,
-        actor: null,
-        before: null,
-        after: jobDoc.toObject(),
-      });
+      await transitionJob(jobDoc, 'succeeded');
 
       return output;
     } catch (err) {
-      console.warn(`Job ${jobDoc._id} error on attempt ${jobDoc.attempts}: ${err.message}`);
+      logger.warn(
+        { jobId: jobDoc._id, attempt: jobDoc.attempts, err: err.message },
+        `Job ${jobDoc._id} error on attempt ${jobDoc.attempts}: ${err.message}`
+      );
 
-      // Check if retries remain
-      if (jobDoc.attempts < jobDoc.maxAttempts) {
-        jobDoc.status = 'retrying';
+      const retryable = isRetryable(err);
+
+      // Check if retries remain and error is retryable
+      if (retryable && jobDoc.attempts < jobDoc.maxAttempts) {
         jobDoc.lastError = err.message;
-        await jobDoc.save();
-
-        await publishEvent('job.updated', {
-          jobId: String(jobDoc._id),
-          status: jobDoc.status,
-          attempts: jobDoc.attempts,
-          lastError: jobDoc.lastError,
-          workflowId: String(jobDoc.workflow),
-        });
-
-        const afterPayload = jobDoc.toObject();
-        afterPayload.attempt = jobDoc.attempts;
-
-        await recordAudit({
-          action: 'job.retrying',
-          entityType: 'job',
-          entityId: jobDoc._id,
-          actor: null,
-          before: null,
-          after: afterPayload,
+        await transitionJob(jobDoc, 'retrying', {
+          meta: { attempt: jobDoc.attempts },
         });
 
         // Rethrow so BullMQ schedules next attempt according to retryPolicy backoff
         throw err;
       } else {
-        // No retries left: dead letter the job
-        jobDoc.status = 'dead_lettered';
+        const reason = !retryable ? 'non_retryable' : 'max_attempts';
         jobDoc.lastError = err.message;
         jobDoc.finishedAt = new Date();
-        await jobDoc.save();
-
-        await publishEvent('job.updated', {
-          jobId: String(jobDoc._id),
-          status: jobDoc.status,
-          attempts: jobDoc.attempts,
-          lastError: jobDoc.lastError,
-          workflowId: String(jobDoc.workflow),
+        await transitionJob(jobDoc, 'dead_lettered', {
+          meta: { reason },
         });
 
-        await recordAudit({
-          action: 'job.dead_lettered',
-          entityType: 'job',
-          entityId: jobDoc._id,
-          actor: null,
-          before: null,
-          after: jobDoc.toObject(),
-        });
-
-        console.error(
-          `Job ${jobDoc._id} dead-lettered after ${jobDoc.attempts} failed attempts: ${err.message}`
+        logger.error(
+          { jobId: jobDoc._id, attempts: jobDoc.attempts, reason, err: err.message },
+          `Job ${jobDoc._id} dead-lettered (${reason}) after ${jobDoc.attempts} failed attempts: ${err.message}`
         );
 
         // Do not rethrow so BullMQ stops and does not perform additional retries
@@ -147,28 +108,31 @@ const worker = new Worker(
 );
 
 worker.on('ready', () => {
-  console.log('Worker listening on queue workflow-jobs');
+  logger.info('Worker listening on queue workflow-jobs');
 });
 
 worker.on('failed', (job, err) => {
-  console.warn(`BullMQ job ${job ? job.id : 'unknown'} failed attempt:`, err.message);
+  logger.warn(
+    { bullJobId: job ? job.id : 'unknown', err: err.message },
+    `BullMQ job ${job ? job.id : 'unknown'} failed attempt: ${err.message}`
+  );
 });
 
 worker.on('completed', (job) => {
-  console.log(`BullMQ job ${job ? job.id : 'unknown'} completed`);
+  logger.info({ bullJobId: job ? job.id : 'unknown' }, `BullMQ job ${job ? job.id : 'unknown'} completed`);
 });
 
 // Graceful shutdown handling
 const shutdown = async (signal) => {
-  console.log(`\nReceived ${signal}. Gracefully stopping worker...`);
+  logger.info(`Received ${signal}. Gracefully stopping worker...`);
   try {
     stopSlaScheduler();
     await worker.close();
     await mongoose.connection.close();
-    console.log('Worker closed and MongoDB disconnected.');
+    logger.info('Worker closed and MongoDB disconnected.');
     process.exit(0);
   } catch (err) {
-    console.error('Error during shutdown:', err);
+    logger.error({ err: err.message }, 'Error during shutdown');
     process.exit(1);
   }
 };
@@ -176,4 +140,7 @@ const shutdown = async (signal) => {
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
-module.exports = worker;
+module.exports = {
+  worker,
+  isRetryable,
+};

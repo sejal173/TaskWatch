@@ -3,6 +3,7 @@ const { Job } = require('../models');
 const { sendAlert } = require('./notifier');
 const { recordAudit } = require('./audit');
 const { publishEvent } = require('../realtime/events');
+const logger = require('../config/logger');
 
 let cronTask = null;
 
@@ -65,7 +66,7 @@ async function runSlaCheck() {
 
       alertedCount++;
     } catch (err) {
-      console.error(`Error processing SLA breach for job ${job._id}:`, err.message);
+      logger.error({ jobId: job._id, err: err.message }, 'Error processing SLA breach');
     }
   }
 
@@ -84,11 +85,11 @@ function startSlaScheduler() {
     try {
       await runSlaCheck();
     } catch (err) {
-      console.error('Error during scheduled SLA check:', err.message);
+      logger.error({ err: err.message }, 'Error during scheduled SLA check');
     }
   });
 
-  console.log('SLA checker scheduled every minute');
+  logger.info('SLA checker scheduled every minute');
   return cronTask;
 }
 
@@ -107,4 +108,3 @@ module.exports = {
   startSlaScheduler,
   stopSlaScheduler,
 };
-
